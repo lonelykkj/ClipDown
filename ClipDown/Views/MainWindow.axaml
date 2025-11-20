@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ClipDown.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ClipDown.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ClipDown">
+
+    <Window.Background>  
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">  
+            <GradientStop Color="#000000" Offset="0.0"/>  
+            <GradientStop Color="#212121" Offset="0.25"/>  
+            <GradientStop Color="#121111" Offset="0.5"/>  
+            <GradientStop Color="#2B2727" Offset="1.0"/>  
+        </LinearGradientBrush>    
+    </Window.Background>  
+  
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+          
+        <TextBlock FontSize="80" FontWeight="Bold">  
+           <TextBlock.Foreground>  
+                <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">  
+                    <GradientStop Color="Purple" Offset="0.0"/>  
+                    <GradientStop Color="Blue" Offset="1.0"/>  
+                </LinearGradientBrush>            
+           </TextBlock.Foreground>  
+            ClipDown  
+        </TextBlock>  
+        
+        <TextBlock Text="Bem-vindo!"  
+                   FontSize="25"  
+                   Foreground="#CCCCCC"  
+                   HorizontalAlignment="Center"/>  
+  
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,20,0,0">
+              
+            <Button Click="GoToDownload" Name="BtnDownload" Foreground="#CCCCCC" Content="Baixar vídeos" HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    Width="150" Height="40">  
+                <Button.Background>  
+                    <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">  
+                        <GradientStop Color="#363636" Offset="0.0"/>  
+                        <GradientStop Color="#212121" Offset="0.5"/>  
+                        <GradientStop Color="#302F2F" Offset="1.0"/>  
+                    </LinearGradientBrush>                
+                </Button.Background>  
+            </Button> 
+            
+            <Button Name="BtnConvert" Foreground="#CCCCCC" Content="Converter imagens" HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center" 
+                    Width="150" Height="40">  
+                <Button.Background>  
+                    <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">  
+                        <GradientStop Color="#363636" Offset="0.0"/>  
+                        <GradientStop Color="#212121" Offset="0.5"/>  
+                        <GradientStop Color="#302F2F" Offset="1.0"/>  
+                    </LinearGradientBrush>                
+                </Button.Background>  
+            </Button>
+            
+        </StackPanel>  
+        
+    </StackPanel>
+</Window>
