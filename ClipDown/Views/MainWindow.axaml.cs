@@ -14,4 +14,9 @@ public partial class MainWindow : Window
     {
         this.Content = new Views.DownloadView();
     }
+    
+    public void GoToConvert(object? sender, RoutedEventArgs args)
+    {
+        this.Content = new Views.ConvertView();
+    }
 }

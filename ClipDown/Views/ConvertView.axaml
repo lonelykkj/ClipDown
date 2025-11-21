@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ClipDown.Views.DownloadView">
+             x:Class="ClipDown.Views.ConvertView">
     
     <UserControl.Background>
         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">  
@@ -15,12 +15,6 @@
     </UserControl.Background>
     
     <Grid>
-        
-        <Button Click="GoToMenu" VerticalAlignment="Top">
-            <PathIcon Data="{StaticResource arrow_export_rtl_regular}" Foreground="Purple">
-            </PathIcon>
-        </Button>
-        
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
             <TextBlock FontSize="80" FontWeight="Bold">  
                 <TextBlock.Foreground>  
@@ -29,24 +23,7 @@
                         <GradientStop Color="Blue" Offset="1.0"/>  
                     </LinearGradientBrush>            </TextBlock.Foreground>  
                 ClipDown  
-            </TextBlock>  
-  
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                
-                <TextBox Width="300" Foreground="#CCCCCC" Background="#363636" Watermark="URL do vídeo..." />  
-            
-                <Button Name="BtnDownload" Foreground="#CCCCCC" Content="Baixar" HorizontalContentAlignment="Center"
-                        VerticalContentAlignment="Center" Width="70" Height="40">  
-                    <Button.Background>  
-                        <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">  
-                            <GradientStop Color="#363636" Offset="0.0"/>  
-                            <GradientStop Color="#212121" Offset="0.5"/>  
-                            <GradientStop Color="#302F2F" Offset="1.0"/>  
-                        </LinearGradientBrush>                
-                    </Button.Background>  
-                </Button>  
-            </StackPanel>
-            
+            </TextBlock> 
         </StackPanel>
     </Grid>
     

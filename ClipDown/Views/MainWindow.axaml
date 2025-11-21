@@ -49,7 +49,7 @@
                 </Button.Background>  
             </Button> 
             
-            <Button Name="BtnConvert" Foreground="#CCCCCC" Content="Converter imagens" HorizontalContentAlignment="Center"
+            <Button Click="GoToConvert" Name="BtnConvert" Foreground="#CCCCCC" Content="Converter imagens" HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center" 
                     Width="150" Height="40">  
                 <Button.Background>  
