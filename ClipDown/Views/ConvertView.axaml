@@ -15,16 +15,57 @@
     </UserControl.Background>
     
     <Grid>
+        
+        <Button Click="GoToMenu" VerticalAlignment="Top">
+            <PathIcon Data="{StaticResource arrow_export_rtl_regular}" Foreground="Purple"></PathIcon>
+        </Button>
+        
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
             <TextBlock FontSize="80" FontWeight="Bold">  
                 <TextBlock.Foreground>  
                     <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">  
                         <GradientStop Color="Purple" Offset="0.0"/>  
                         <GradientStop Color="Blue" Offset="1.0"/>  
-                    </LinearGradientBrush>            </TextBlock.Foreground>  
+                    </LinearGradientBrush>            
+                </TextBlock.Foreground>  
                 ClipDown  
             </TextBlock> 
+            
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                <ComboBox SelectedIndex="0" MaxDropDownHeight="100">
+                    <ComboBoxItem>PNG</ComboBoxItem>
+                    <ComboBoxItem>JPG</ComboBoxItem>
+                    <ComboBoxItem>JPEG</ComboBoxItem>
+                    <ComboBoxItem>JFIF</ComboBoxItem>
+                    <ComboBoxItem>SVG</ComboBoxItem>
+                    <ComboBoxItem>ICO</ComboBoxItem>
+                </ComboBox>
+                
+                <TextBlock Foreground="#CCCCCC" VerticalAlignment="Center" FontSize="15">TO</TextBlock>
+                
+                <ComboBox SelectedIndex="0" MaxDropDownHeight="100">
+                    <ComboBoxItem>PNG</ComboBoxItem>
+                    <ComboBoxItem>JPG</ComboBoxItem>
+                    <ComboBoxItem>JPEG</ComboBoxItem>
+                    <ComboBoxItem>JFIF</ComboBoxItem>
+                    <ComboBoxItem>SVG</ComboBoxItem>
+                    <ComboBoxItem>ICO</ComboBoxItem>
+                </ComboBox>
+                
+                <Button Height="33" Foreground="#CCCCCC">
+                    <Button.Background>  
+                        <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">  
+                            <GradientStop Color="#363636" Offset="0.0"/>  
+                            <GradientStop Color="#212121" Offset="0.5"/>  
+                            <GradientStop Color="#302F2F" Offset="1.0"/>  
+                        </LinearGradientBrush>                
+                    </Button.Background>  
+                    Converter
+                </Button>
+                
+            </StackPanel>
         </StackPanel>
+        
     </Grid>
     
 </UserControl>

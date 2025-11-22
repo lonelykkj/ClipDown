@@ -17,8 +17,7 @@
     <Grid>
         
         <Button Click="GoToMenu" VerticalAlignment="Top">
-            <PathIcon Data="{StaticResource arrow_export_rtl_regular}" Foreground="Purple">
-            </PathIcon>
+            <PathIcon Data="{StaticResource arrow_export_rtl_regular}" Foreground="Purple"></PathIcon>
         </Button>
         
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="15">
