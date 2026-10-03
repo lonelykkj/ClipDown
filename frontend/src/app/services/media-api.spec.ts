@@ -49,4 +49,26 @@ describe('MediaApi', () => {
 
     await expect(promise).rejects.toThrow('Não foi possível conectar ao servidor.');
   });
+
+  it('posts the video link as JSON and uses the file name chosen by the server', async () => {
+    const promise = api.downloadVideo('https://youtu.be/abc', 'MP4');
+
+    const req = http.expectOne('http://localhost:5107/api/media/download');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ url: 'https://youtu.be/abc', format: 'MP4' });
+    req.flush(new Blob(['video']), {
+      headers: { 'Content-Disposition': "attachment; filename=Meu_Video.mp4; filename*=UTF-8''Meu_Video.mp4" },
+    });
+
+    const result = await promise;
+    expect(result.fileName).toBe('Meu_Video.mp4');
+  });
+
+  it('falls back to a default name when the server sends none', async () => {
+    const promise = api.downloadVideo('https://youtu.be/abc', 'WebM');
+
+    http.expectOne('http://localhost:5107/api/media/download').flush(new Blob(['video']));
+
+    expect((await promise).fileName).toBe('video.webm');
+  });
 });

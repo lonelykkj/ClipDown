@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { MediaApi } from './services/media-api';
+import { DownloadableFile, MediaApi } from './services/media-api';
 
 type FunctionId = 'download' | 'video-mp3' | 'video-gif' | 'image';
 
@@ -97,24 +97,37 @@ export class App {
   protected async start(): Promise<void> {
     this.clearMessages();
 
-    // Por enquanto só a conversão de imagem está integrada com o backend.
-    if (this.selectedId() !== 'image') {
+    const task = this.buildTask();
+    if (!task) {
       this.error.set('Esta função ainda não está disponível.');
       return;
     }
 
-    const file = this.file();
-    if (!file) return;
-
     this.loading.set(true);
     try {
-      const result = await this.mediaApi.convertImage(file, this.format());
+      const result = await task();
       this.saveFile(result.blob, result.fileName);
       this.success.set(`Pronto! "${result.fileName}" foi baixado.`);
     } catch (e) {
       this.error.set(e instanceof Error ? e.message : 'Erro inesperado.');
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Devolve a chamada ao backend da função escolhida, ou `null` se ainda não estiver integrada. */
+  private buildTask(): (() => Promise<DownloadableFile>) | null {
+    const format = this.format();
+
+    switch (this.selectedId()) {
+      case 'download':
+        return () => this.mediaApi.downloadVideo(this.url().trim(), format);
+      case 'image': {
+        const file = this.file();
+        return file ? () => this.mediaApi.convertImage(file, format) : null;
+      }
+      default:
+        return null;
     }
   }
 

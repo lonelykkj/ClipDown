@@ -13,7 +13,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(FrontendCorsPolicy, policy => policy
         .WithOrigins(allowedOrigins)
         .AllowAnyHeader()
-        .AllowAnyMethod()));
+        .AllowAnyMethod()
+        // Sem isso o navegador esconde o nome do arquivo escolhido pelo servidor.
+        .WithExposedHeaders("Content-Disposition")));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

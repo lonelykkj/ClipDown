@@ -1,3 +1,4 @@
+using ClipDown.Application.Common;
 using ClipDown.Application.Common.Interfaces;
 using ClipDown.Application.Common.Models;
 using ClipDown.Domain.Enums;
@@ -25,24 +26,12 @@ public sealed class ImageConversionService(IImageConverter imageConverter) : IIm
     private static bool TryParseFormat(string? value, out ImageFormat format)
     {
         // "jpeg" é aceito como apelido de "jpg".
-        if (string.Equals(value, "jpeg", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(value?.Trim(), "jpeg", StringComparison.OrdinalIgnoreCase))
         {
             format = ImageFormat.Jpg;
             return true;
         }
 
-        // Compara com os nomes do enum em vez de usar Enum.TryParse, que também aceitaria
-        // números ("1") e listas ("Png,Jpg").
-        foreach (var candidate in Enum.GetValues<ImageFormat>())
-        {
-            if (string.Equals(value?.Trim(), candidate.ToString(), StringComparison.OrdinalIgnoreCase))
-            {
-                format = candidate;
-                return true;
-            }
-        }
-
-        format = default;
-        return false;
+        return FormatParser.TryParse(value, out format);
     }
 }
