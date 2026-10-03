@@ -92,7 +92,7 @@
         [disabled]="!canStart()"
         class="mt-2 rounded-xl bg-violet-500 px-6 py-3.5 font-medium text-white transition hover:bg-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
       >
-        {{ loading() ? 'Convertendo...' : 'Iniciar' }}
+        {{ loading() ? 'Processando...' : 'Iniciar' }}
       </button>
 
       @if (error(); as message) {

@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<IImageConverter, ImageSharpImageConverter>();
         services.AddSingleton<IVideoDownloader, YtDlpVideoDownloader>();
+        services.AddSingleton<IVideoConverter, FfmpegVideoConverter>();
 
         return services;
     }

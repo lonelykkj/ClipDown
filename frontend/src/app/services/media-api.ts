@@ -23,6 +23,16 @@ export class MediaApi {
     return this.send('convert/image', body, `${baseName}.${format.toLowerCase()}`);
   }
 
+  /** Envia o vídeo para o backend e devolve o áudio (MP3) ou o GIF. Lança um `Error` com mensagem amigável. */
+  convertVideo(file: File, format: string): Promise<DownloadableFile> {
+    const body = new FormData();
+    body.append('file', file);
+    body.append('format', format);
+
+    const baseName = file.name.replace(/\.[^.]+$/, '');
+    return this.send('convert/video', body, `${baseName}.${format.toLowerCase()}`);
+  }
+
   /** Pede ao backend para baixar o vídeo do link. Lança um `Error` com mensagem amigável. */
   downloadVideo(url: string, format: string): Promise<DownloadableFile> {
     return this.send('download', { url, format }, `video.${format.toLowerCase()}`);

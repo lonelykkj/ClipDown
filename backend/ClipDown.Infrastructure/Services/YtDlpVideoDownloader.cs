@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.Diagnostics;
 using ClipDown.Application.Common.Interfaces;
 using ClipDown.Application.Common.Models;
 using ClipDown.Domain.Enums;
@@ -23,9 +21,11 @@ public sealed class YtDlpVideoDownloader : IVideoDownloader
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(Timeout);
 
-            var run = await RunYtDlpAsync(BuildArguments(url, format, workDir), timeout.Token);
-            if (!run.Success)
-                return Result<OutputFile>.Failure(run.Error);
+            var run = await ExternalProcess.RunAsync("yt-dlp", BuildArguments(url, format, workDir), timeout.Token);
+            if (run is null)
+                return Result<OutputFile>.Failure("yt-dlp não está instalado no servidor.");
+            if (!run.Succeeded)
+                return Result<OutputFile>.Failure(ToFriendlyError(run.StandardError));
 
             // Ignora arquivos temporários do yt-dlp (.part, .ytdl) caso sobrem no diretório.
             var file = Directory.GetFiles(workDir)
@@ -75,46 +75,6 @@ public sealed class YtDlpVideoDownloader : IVideoDownloader
     /// </summary>
     private static string SortOrder(VideoFormat format) =>
         format == VideoFormat.Mp4 ? "vcodec:h264,res,acodec:m4a" : "ext:webm:webm";
-
-    private static async Task<(bool Success, string Error)> RunYtDlpAsync(
-        IEnumerable<string> arguments, CancellationToken cancellationToken)
-    {
-        var startInfo = new ProcessStartInfo("yt-dlp")
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false
-        };
-        foreach (var argument in arguments)
-            startInfo.ArgumentList.Add(argument);
-
-        using var process = new Process { StartInfo = startInfo };
-        try
-        {
-            process.Start();
-        }
-        catch (Win32Exception)
-        {
-            return (false, "yt-dlp não está instalado no servidor.");
-        }
-
-        // As duas saídas precisam ser lidas, senão o processo pode travar com o buffer cheio.
-        var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
-        var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
-
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            process.Kill(entireProcessTree: true);
-            throw;
-        }
-
-        await Task.WhenAll(stdout, stderr);
-        return process.ExitCode == 0 ? (true, "") : (false, ToFriendlyError(stderr.Result));
-    }
 
     /// <summary>Pega a última linha "ERROR: ..." do yt-dlp, sem expor caminhos do servidor.</summary>
     private static string ToFriendlyError(string stderr)

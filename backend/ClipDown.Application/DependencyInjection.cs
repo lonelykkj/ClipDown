@@ -11,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IImageConversionService, ImageConversionService>();
         services.AddScoped<IVideoDownloadService, VideoDownloadService>();
+        services.AddScoped<IVideoConversionService, VideoConversionService>();
 
         return services;
     }

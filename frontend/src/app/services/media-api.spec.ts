@@ -71,4 +71,17 @@ describe('MediaApi', () => {
 
     expect((await promise).fileName).toBe('video.webm');
   });
+
+  it('sends the video as multipart to the video conversion endpoint', async () => {
+    const promise = api.convertVideo(new File(['x'], 'clipe.mp4'), 'MP3');
+
+    const req = http.expectOne('http://localhost:5107/api/media/convert/video');
+    expect(req.request.method).toBe('POST');
+    const body = req.request.body as FormData;
+    expect((body.get('file') as File).name).toBe('clipe.mp4');
+    expect(body.get('format')).toBe('MP3');
+    req.flush(new Blob(['audio']));
+
+    expect((await promise).fileName).toBe('clipe.mp3');
+  });
 });

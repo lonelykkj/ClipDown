@@ -98,10 +98,7 @@ export class App {
     this.clearMessages();
 
     const task = this.buildTask();
-    if (!task) {
-      this.error.set('Esta função ainda não está disponível.');
-      return;
-    }
+    if (!task) return;
 
     this.loading.set(true);
     try {
@@ -115,7 +112,7 @@ export class App {
     }
   }
 
-  /** Devolve a chamada ao backend da função escolhida, ou `null` se ainda não estiver integrada. */
+  /** Devolve a chamada ao backend da função escolhida, ou `null` se não há o que enviar. */
   private buildTask(): (() => Promise<DownloadableFile>) | null {
     const format = this.format();
 
@@ -126,8 +123,11 @@ export class App {
         const file = this.file();
         return file ? () => this.mediaApi.convertImage(file, format) : null;
       }
-      default:
-        return null;
+      case 'video-mp3':
+      case 'video-gif': {
+        const file = this.file();
+        return file ? () => this.mediaApi.convertVideo(file, format) : null;
+      }
     }
   }
 

@@ -7,9 +7,11 @@ namespace ClipDown.API.Controllers;
 [Route("api/media")]
 public class MediaController(
     IImageConversionService imageConversionService,
-    IVideoDownloadService videoDownloadService) : ControllerBase
+    IVideoDownloadService videoDownloadService,
+    IVideoConversionService videoConversionService) : ControllerBase
 {
     private const long MaxImageSizeBytes = 50 * 1024 * 1024;
+    private const long MaxVideoSizeBytes = 200 * 1024 * 1024;
     public record DownloadVideoRequest(string Url, string Format);
 
     [HttpPost("convert/image")]
@@ -22,6 +24,24 @@ public class MediaController(
 
         await using var stream = file.OpenReadStream();
         var result = await imageConversionService.ConvertAsync(stream, file.FileName, format, cancellationToken);
+
+        if (!result.IsSuccess)
+            return Problem(result.Error, statusCode: StatusCodes.Status400BadRequest);
+
+        return File(result.Value.Content, result.Value.ContentType, result.Value.FileName);
+    }
+
+    [HttpPost("convert/video")]
+    [RequestSizeLimit(MaxVideoSizeBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxVideoSizeBytes)]
+    public async Task<IActionResult> ConvertVideo(
+        IFormFile file, [FromForm] string format, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+            return Problem("O arquivo enviado está vazio.", statusCode: StatusCodes.Status400BadRequest);
+
+        await using var stream = file.OpenReadStream();
+        var result = await videoConversionService.ConvertAsync(stream, file.FileName, format, cancellationToken);
 
         if (!result.IsSuccess)
             return Problem(result.Error, statusCode: StatusCodes.Status400BadRequest);
