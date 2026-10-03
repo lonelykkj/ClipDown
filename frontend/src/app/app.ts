@@ -1,148 +1,129 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { DownloadableFile, MediaApi } from './services/media-api';
-
-type FunctionId = 'download' | 'video-mp3' | 'video-gif' | 'image';
+import { Component, signal } from '@angular/core';
+import { convertFile, downloadVideo } from './api';
 
 interface FunctionOption {
-  id: FunctionId;
+  id: string;
   label: string;
+  /** Rota do backend que executa a função. */
+  endpoint: string;
+  /** `url`: caixa para colar o link. `file`: área de upload. */
   input: 'url' | 'file';
+  /** Tipos de arquivo aceitos no upload. */
   accept?: string;
+  /** Texto de ajuda mostrado na área de upload. */
+  hint?: string;
   formats: string[];
 }
+
+const FUNCTIONS: FunctionOption[] = [
+  {
+    id: 'download',
+    label: 'Download de vídeo',
+    endpoint: 'download',
+    input: 'url',
+    formats: ['MP4', 'WebM'],
+  },
+  {
+    id: 'video-mp3',
+    label: 'Vídeo → MP3',
+    endpoint: 'convert/video',
+    input: 'file',
+    accept: 'video/mp4',
+    hint: 'Vídeo MP4',
+    formats: ['MP3'],
+  },
+  {
+    id: 'video-gif',
+    label: 'Vídeo → GIF',
+    endpoint: 'convert/video',
+    input: 'file',
+    accept: 'video/mp4',
+    hint: 'Vídeo MP4',
+    formats: ['GIF'],
+  },
+  {
+    id: 'image',
+    label: 'Converter imagem',
+    endpoint: 'convert/image',
+    input: 'file',
+    accept: 'image/*',
+    hint: 'JPG, PNG, WebP e outros',
+    formats: ['PNG', 'JPG', 'WebP', 'GIF', 'BMP'],
+  },
+];
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
-  styleUrl: './app.css',
 })
 export class App {
-  protected readonly functions: FunctionOption[] = [
-    {
-      id: 'download',
-      label: 'Download de vídeo',
-      input: 'url',
-      formats: ['MP4', 'WebM']
-    },
-    {
-      id: 'video-mp3',
-      label: 'Vídeo → MP3',
-      input: 'file',
-      accept: 'video/mp4',
-      formats: ['MP3'],
-    },
-    {
-      id: 'video-gif',
-      label: 'Vídeo → GIF',
-      input: 'file',
-      accept: 'video/mp4',
-      formats: ['GIF'],
-    },
-    {
-      id: 'image',
-      label: 'Converter imagem',
-      input: 'file',
-      accept: 'image/*',
-      formats: ['PNG', 'JPG', 'WebP', 'GIF', 'BMP'],
-    },
-  ];
+  protected readonly functions = FUNCTIONS;
 
-  protected readonly selectedId = signal<FunctionId>('download');
-  protected readonly format = signal('MP4');
+  protected readonly selected = signal(FUNCTIONS[0]);
+  protected readonly format = signal(FUNCTIONS[0].formats[0]);
   protected readonly url = signal('');
   protected readonly file = signal<File | null>(null);
   protected readonly dragging = signal(false);
   protected readonly loading = signal(false);
-  protected readonly error = signal<string | null>(null);
-  protected readonly success = signal<string | null>(null);
+  protected readonly message = signal<{ text: string; isError: boolean } | null>(null);
 
-  private readonly mediaApi = inject(MediaApi);
-
-  protected readonly current = computed(
-    () => this.functions.find((f) => f.id === this.selectedId())!,
-  );
-
-  protected readonly canStart = computed(
-    () =>
-      !this.loading() &&
-      (this.current().input === 'url' ? this.url().trim().length > 0 : this.file() !== null),
-  );
-
-  protected onFunctionChange(id: string): void {
-    this.selectedId.set(id as FunctionId);
-    this.format.set(this.current().formats[0]);
+  protected selectFunction(id: string): void {
+    const option = FUNCTIONS.find((f) => f.id === id)!;
+    this.selected.set(option);
+    this.format.set(option.formats[0]);
     this.url.set('');
     this.file.set(null);
-    this.clearMessages();
+    this.message.set(null);
   }
 
-  protected onFileChange(event: Event): void {
+  protected selectFile(file: File | undefined): void {
+    this.file.set(file ?? null);
+    this.message.set(null);
+  }
+
+  protected onFileInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.file.set(input.files?.[0] ?? null);
-    this.clearMessages();
+    this.selectFile(input.files?.[0]);
+    input.value = ''; // permite escolher o mesmo arquivo de novo (senão o navegador não avisa a mudança)
   }
 
   protected onDrop(event: DragEvent): void {
-    event.preventDefault();
+    event.preventDefault(); // sem isso o navegador abre o arquivo em vez de entregá-lo à página
     this.dragging.set(false);
-    this.file.set(event.dataTransfer?.files?.[0] ?? null);
-    this.clearMessages();
+    this.selectFile(event.dataTransfer?.files[0]);
   }
 
-  protected onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.dragging.set(true);
+  protected canStart(): boolean {
+    if (this.loading()) return false;
+    return this.selected().input === 'url' ? this.url().trim() !== '' : this.file() !== null;
   }
 
   protected async start(): Promise<void> {
-    this.clearMessages();
-
-    const task = this.buildTask();
-    if (!task) return;
-
+    const option = this.selected();
+    this.message.set(null);
     this.loading.set(true);
+
     try {
-      const result = await task();
-      this.saveFile(result.blob, result.fileName);
-      this.success.set(`Pronto! "${result.fileName}" foi baixado.`);
-    } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Erro inesperado.');
+      const result =
+        option.input === 'url'
+          ? await downloadVideo(this.url().trim(), this.format())
+          : await convertFile(option.endpoint, this.file()!, this.format());
+
+      saveFile(result.blob, result.fileName);
+      this.message.set({ text: `Pronto! "${result.fileName}" foi baixado.`, isError: false });
+    } catch (error) {
+      this.message.set({ text: (error as Error).message, isError: true });
     } finally {
       this.loading.set(false);
     }
   }
+}
 
-  /** Devolve a chamada ao backend da função escolhida, ou `null` se não há o que enviar. */
-  private buildTask(): (() => Promise<DownloadableFile>) | null {
-    const format = this.format();
-
-    switch (this.selectedId()) {
-      case 'download':
-        return () => this.mediaApi.downloadVideo(this.url().trim(), format);
-      case 'image': {
-        const file = this.file();
-        return file ? () => this.mediaApi.convertImage(file, format) : null;
-      }
-      case 'video-mp3':
-      case 'video-gif': {
-        const file = this.file();
-        return file ? () => this.mediaApi.convertVideo(file, format) : null;
-      }
-    }
-  }
-
-  private clearMessages(): void {
-    this.error.set(null);
-    this.success.set(null);
-  }
-
-  /** Dispara o download no navegador a partir de um Blob. */
-  private saveFile(blob: Blob, fileName: string): void {
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(objectUrl);
-  }
+/** Faz o navegador baixar o arquivo, usando um link temporário. */
+function saveFile(blob: Blob, fileName: string): void {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }

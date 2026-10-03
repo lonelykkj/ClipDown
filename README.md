@@ -60,7 +60,7 @@ A interface é de tela única e propositalmente minimalista:
 
 | Camada | Tecnologia | Papel |
 |---|---|---|
-| Frontend | **Angular 21** + **Tailwind CSS 4** | SPA de tela única (signals, `HttpClient`) |
+| Frontend | **Angular 21** + **Tailwind CSS 4** | SPA de tela única (signals e `fetch`) |
 | Backend | **.NET 9 (ASP.NET Core Web API)** | Conversões, download por URL e orquestração das ferramentas externas |
 | Imagens | [SixLabors.ImageSharp](https://github.com/SixLabors/ImageSharp) | Biblioteca .NET multiplataforma para ler/gravar JPG, PNG, WebP, GIF e BMP |
 | Vídeo/áudio | [FFmpeg](https://ffmpeg.org/) | Conversão MP4 → MP3 e MP4 → GIF (GIF com paleta de cores gerada a partir do vídeo) |
@@ -101,7 +101,7 @@ Abra **http://localhost:4200**.
 
 ```bash
 cd frontend
-npm test        # Vitest (componente e serviço de API)
+npm test        # Vitest (tela e chamadas à API)
 ```
 
 Ainda não há projeto de testes no backend.
@@ -146,31 +146,18 @@ curl -X POST http://localhost:5107/api/media/download \
 
 ## Arquitetura
 
-O backend segue **Clean Architecture**, com as dependências sempre apontando para dentro:
+O backend é um único projeto ASP.NET Core. Cada funcionalidade é uma classe em `Services/`, que valida a entrada e faz o trabalho; o controller só cuida do HTTP:
 
 ```
-API  ──►  Application  ──►  Domain
- │            ▲
- └──►  Infrastructure ─┘
+MediaController  →  ImageConverter   (ImageSharp)
+   (HTTP)        →  VideoConverter   (ffmpeg)
+                 →  VideoDownloader  (yt-dlp)
 ```
 
-| Projeto | Responsabilidade |
-|---|---|
-| `ClipDown.Domain` | Conceitos puros: enums de formato (`ImageFormat`, `VideoFormat`, `VideoConversionTarget`) |
-| `ClipDown.Application` | Regras da aplicação: serviços, contratos (interfaces) e modelos (`Result<T>`, `OutputFile`) |
-| `ClipDown.Infrastructure` | Detalhes técnicos: ImageSharp, FFmpeg, yt-dlp e o executor de processos externos |
-| `ClipDown.API` | Controllers HTTP, CORS e configuração |
-
-Cada funcionalidade segue o mesmo caminho:
-
-```
-MediaController  →  *Service (Application)  →  implementação (Infrastructure)
-   (HTTP)             valida entrada, nomes      ImageSharp / ffmpeg / yt-dlp
-```
+O frontend é um único componente (`app.ts`) e um arquivo `api.ts` com as chamadas ao backend (usando `fetch`). As funções da tela ficam numa lista de configuração (`FUNCTIONS`), com a rota do backend, o tipo de entrada e os formatos de cada uma.
 
 Decisões de design:
 
-- **Contratos na Application, implementações na Infrastructure:** trocar uma biblioteca ou ferramenta mexe só na Infrastructure.
 - **`Result<T>` em vez de exceções** para entradas inválidas (formato inexistente, arquivo que não é imagem, link inválido). Falhas inesperadas continuam sendo exceções e viram `500`.
 - **Processos externos sem shell:** os argumentos do yt-dlp/ffmpeg são passados como lista, e a URL vem depois de `--`, para nunca ser interpretada como opção.
 - **Arquivos temporários:** cada operação usa uma pasta temporária própria, apagada ao final.
@@ -180,21 +167,28 @@ Decisões de design:
 
 ```
 ClipDown/
-├── .gitignore
 ├── README.md
-├── docs/
-│   └── screenshots/             # Prints usados neste README
+├── docs/screenshots/            # Prints usados neste README
 ├── backend/
 │   ├── ClipDown.sln
-│   ├── ClipDown.API/            # Controllers, Program.cs, appsettings
-│   ├── ClipDown.Application/    # Serviços, interfaces e modelos
-│   │   └── Features/            # Images/ e Videos/
-│   ├── ClipDown.Domain/         # Enums e tipos base
-│   └── ClipDown.Infrastructure/ # ImageSharp, ffmpeg, yt-dlp
-└── frontend/                    # Aplicação Angular
-    └── src/app/
-        ├── app.ts / app.html    # Tela única
-        └── services/media-api.ts  # Comunicação com o backend
+│   └── ClipDown.API/
+│       ├── Program.cs           # Registro dos serviços e CORS
+│       ├── Result.cs            # Result<T> e OutputFile
+│       ├── appsettings.json
+│       ├── Controllers/
+│       │   └── MediaController.cs
+│       └── Services/
+│           ├── ImageConverter.cs
+│           ├── VideoConverter.cs
+│           ├── VideoDownloader.cs
+│           └── ExternalProcess.cs   # Executa ffmpeg / yt-dlp
+└── frontend/
+    └── src/
+        ├── main.ts
+        ├── styles.css
+        └── app/
+            ├── app.ts / app.html    # Tela única
+            └── api.ts               # Chamadas ao backend
 ```
 
 ## Notas
