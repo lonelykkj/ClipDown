@@ -17,7 +17,12 @@ interface FunctionOption {
 })
 export class App {
   protected readonly functions: FunctionOption[] = [
-    { id: 'download', label: 'Download de vídeo', input: 'url', formats: ['MP4', 'WebM'] },
+    {
+      id: 'download',
+      label: 'Download de vídeo',
+      input: 'url',
+      formats: ['MP4', 'WebM']
+    },
     {
       id: 'video-mp3',
       label: 'Vídeo → MP3',
