@@ -92,8 +92,15 @@
         [disabled]="!canStart()"
         class="mt-2 rounded-xl bg-violet-500 px-6 py-3.5 font-medium text-white transition hover:bg-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
       >
-        Iniciar
+        {{ loading() ? 'Convertendo...' : 'Iniciar' }}
       </button>
+
+      @if (error(); as message) {
+        <p role="alert" class="text-sm text-red-400 text-center">{{ message }}</p>
+      }
+      @if (success(); as message) {
+        <p role="status" class="text-sm text-emerald-400 text-center">{{ message }}</p>
+      }
     </form>
 
     <footer class="text-xs text-zinc-600">Uso pessoal · respeite os direitos autorais</footer>
