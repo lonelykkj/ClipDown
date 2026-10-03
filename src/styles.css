@@ -1,3 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+@theme {
+  --font-title: 'Sora', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: #0b0a10;
+  background-image: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    rgb(139 92 246 / 0.16),
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
