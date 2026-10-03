@@ -8,6 +8,10 @@
 
 > Ferramenta web de uso pessoal para conversão de imagens, conversão de vídeos (MP4 → MP3/GIF) e download de vídeos por URL — sem anúncios, sem pop-ups e sem sites maliciosos.
 
+<p align="center">
+  <img src="docs/screenshots/home.png" alt="Tela inicial do ClipDown" width="720">
+</p>
+
 ## Sobre
 
 O **ClipDown** é um projeto de **uso pessoal** criado para eliminar a dependência de sites de terceiros — repletos de anúncios e, muitas vezes, maliciosos — em tarefas simples de manipulação de mídia. Tudo roda localmente, com uma interface limpa e apenas o necessário.
@@ -16,80 +20,55 @@ O **ClipDown** é um projeto de **uso pessoal** criado para eliminar a dependên
 
 | Função | Entrada | Saída |
 |---|---|---|
-| **Conversão de imagens** | Arquivo de imagem (JPG, JPEG, PNG, WebP, entre outras extensões) | Imagem no formato escolhido |
-| **Conversão em áudio** | Vídeo MP4 | MP3 |
-| **Conversão em GIF** | Vídeo MP4 | GIF |
-| **Download por URL** | Link de vídeo (YouTube, Instagram, TikTok, Twitter/X etc.) | Arquivo de vídeo baixado |
+| **Download por URL** | Link de vídeo (YouTube, Instagram, TikTok, Twitter/X e outros sites suportados pelo yt-dlp) | Vídeo em **MP4** ou **WebM** |
+| **Vídeo → MP3** | Arquivo de vídeo (MP4) | Áudio **MP3** |
+| **Vídeo → GIF** | Arquivo de vídeo (MP4) | **GIF** animado |
+| **Conversão de imagens** | Arquivo de imagem (JPG, PNG, WebP, GIF, BMP e outros que o ImageSharp lê) | **PNG, JPG, WebP, GIF** ou **BMP** |
+
+### Como funciona a tela
+
+A interface é de tela única e propositalmente minimalista:
+
+- Em **Download de vídeo**, a caixa de texto recebe o **link**.
+- Nas funções de conversão, a caixa de link dá lugar a uma **área de upload** (clique ou arraste o arquivo).
+- Os selects **Função** e **Formato** definem o que fazer; os formatos disponíveis mudam conforme a função.
+- Ao terminar, o arquivo processado é **baixado automaticamente**, e uma mensagem confirma o sucesso (ou explica o erro).
+
+<p align="center">
+  <img src="docs/screenshots/convert-image.png" alt="Conversão de imagem concluída" width="560">
+  &nbsp;
+  <img src="docs/screenshots/mobile.png" alt="Layout no celular" width="170">
+</p>
 
 ### Roadmap
 
 **MVP**
 
-- [ ] Download de vídeo por URL
-- [ ] Conversão MP4 → MP3
-- [ ] Conversão MP4 → GIF
-- [ ] Conversão de imagens entre formatos
+- [x] Download de vídeo por URL
+- [x] Conversão MP4 → MP3
+- [x] Conversão MP4 → GIF
+- [x] Conversão de imagens entre formatos
 
 **Futuro**
 
 - [ ] **Upscaling de imagens** — melhorar qualidade/resolução via IA (candidatos: Real-ESRGAN via ONNX Runtime, ou API externa)
 - [ ] Empacotar dependências (FFmpeg, yt-dlp) em imagem Docker
-
-## Interface
-
-A interface será propositalmente minimalista:
-
-```
-┌─────────────────────────────────────┐
-│                                     │
-│              ClipDown               │
-│                                     │
-│   ┌─────────────────────────────┐   │
-│   │ Cole o link aqui...         │   │
-│   └─────────────────────────────┘   │
-│                                     │
-│   [ Função ▾ ]    [ Formato ▾ ]     │
-│                                     │
-│              [ Iniciar ]            │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-- O nome **ClipDown** centralizado no meio da tela
-- Logo abaixo, uma caixa de busca para **colar o link** do vídeo
-- **Selects** para escolher a função (ex.: *Download de vídeo*, *Vídeo → MP3*, *Vídeo → GIF*, *Converter imagem*) e o formato de saída
-- Nas funções de conversão (que partem de arquivos locais), a caixa de link dá lugar a um **upload de arquivo**
-- Ao final, o arquivo processado é oferecido como **download direto**
+- [ ] Testes automatizados no backend
+- [ ] Configurar a URL da API por ambiente no frontend (hoje está fixa em `localhost:5107`)
 
 ## Stack
 
-### Principal
-
 | Camada | Tecnologia | Papel |
 |---|---|---|
-| Frontend | **Angular 21** | SPA de tela única com a caixa de busca e os seletores. Estilização com **Tailwind CSS 4** |
+| Frontend | **Angular 21** + **Tailwind CSS 4** | SPA de tela única (signals, `HttpClient`) |
 | Backend | **.NET 9 (ASP.NET Core Web API)** | Conversões, download por URL e orquestração das ferramentas externas |
+| Imagens | [SixLabors.ImageSharp](https://github.com/SixLabors/ImageSharp) | Biblioteca .NET multiplataforma para ler/gravar JPG, PNG, WebP, GIF e BMP |
+| Vídeo/áudio | [FFmpeg](https://ffmpeg.org/) | Conversão MP4 → MP3 e MP4 → GIF (GIF com paleta de cores gerada a partir do vídeo) |
+| Download | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Download de vídeos por URL — suporta centenas de sites e é atualizado conforme as plataformas mudam |
 
-### Complementar (recomendadas)
-
-| Ferramenta | Uso | Motivo |
-|---|---|---|
-| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Download de vídeos por URL | Ferramenta de referência: suporta YouTube, Instagram, TikTok, Twitter/X e centenas de outros sites, com atualização constante conforme as plataformas mudam. Invocada pelo backend via linha de comando |
-| [FFmpeg](https://ffmpeg.org/) | Conversão MP4 → MP3 / GIF | Padrão de mercado em manipulação de áudio/vídeo, incluindo geração de GIF com boa qualidade (via paleta de cores) |
-| [FFMpegCore](https://github.com/rosenbjerg/FFMpegCore) | Wrapper .NET para o FFmpeg | Permite invocar o FFmpeg a partir do backend sem montar comandos manualmente |
-| [ImageSharp](https://github.com/SixLabors/ImageSharp) | Conversão de imagens | Biblioteca .NET multiplataforma para carregar/salvar JPG, PNG, WebP, GIF, BMP etc. (o `System.Drawing` é limitado ao Windows). Gratuita para uso pessoal |
-
-> **Nota:** yt-dlp e FFmpeg são binários externos — precisam estar instalados no ambiente (e no `PATH`), ou embutidos via Docker no futuro.
-
-## API prevista
-
-| Método | Rota | Descrição |
-|---|---|---|
-| `POST` | `/api/media/download` | Recebe uma URL e retorna o vídeo baixado |
-| `POST` | `/api/media/convert/video` | Recebe um vídeo e o converte (MP3, GIF etc.) |
-| `POST` | `/api/media/convert/image` | Recebe uma imagem e a converte para o formato escolhido |
-
-Todas as rotas retornam o arquivo processado, que o frontend oferece como download.
+> **Nota:** yt-dlp e FFmpeg são binários externos — precisam estar instalados no ambiente (e no `PATH`), ou embutidos via Docker no futuro. O FFmpeg também é usado pelo yt-dlp para juntar vídeo e áudio.
+>
+> **Licença do ImageSharp:** a biblioteca usa a *Six Labors Split License* (gratuita para código aberto e uso pessoal/pequeno porte). O build exibe um aviso pedindo uma licença; confira os termos em [sixlabors.com/pricing](https://sixlabors.com/pricing/) caso o uso do projeto mude.
 
 ## Como rodar (desenvolvimento)
 
@@ -97,17 +76,105 @@ Pré-requisitos:
 
 - [Node.js](https://nodejs.org) + npm
 - [SDK do .NET 9](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [FFmpeg](https://ffmpeg.org/download.html) instalado e no `PATH`
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/Installation) instalado e no `PATH`
+- [FFmpeg](https://ffmpeg.org/download.html) e [yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/Installation) instalados e no `PATH`
 
 ```bash
-# Terminal 1 — backend (ASP.NET Core)
-dotnet run --project backend/ClipDown.Api
-
-# Terminal 2 — frontend (Angular)
-cd frontend
-npm start        # ng serve → http://localhost:4200
+# macOS (Homebrew)
+brew install ffmpeg yt-dlp
 ```
+
+```bash
+# Terminal 1 — backend (ASP.NET Core) em http://localhost:5107
+dotnet run --project backend/ClipDown.API --launch-profile http
+
+# Terminal 2 — frontend (Angular) em http://localhost:4200
+cd frontend
+npm install     # só na primeira vez
+npm start       # equivale a: ng serve
+```
+
+Abra **http://localhost:4200**.
+
+> Use o perfil `http` do backend. O perfil `https` redireciona as chamadas e quebra o CORS durante o desenvolvimento.
+
+### Testes
+
+```bash
+cd frontend
+npm test        # Vitest (componente e serviço de API)
+```
+
+Ainda não há projeto de testes no backend.
+
+## API
+
+Todas as rotas retornam **o arquivo processado** (com `Content-Disposition` contendo o nome sugerido). Em caso de erro, retornam `400` com um corpo [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) cujo campo `detail` traz a mensagem.
+
+| Método | Rota | Corpo | Descrição |
+|---|---|---|---|
+| `POST` | `/api/media/download` | JSON `{ "url": "...", "format": "mp4" \| "webm" }` | Baixa o vídeo do link informado |
+| `POST` | `/api/media/convert/video` | `multipart/form-data`: `file`, `format` (`mp3` \| `gif`) | Converte um vídeo em áudio MP3 ou GIF |
+| `POST` | `/api/media/convert/image` | `multipart/form-data`: `file`, `format` (`png` \| `jpg` \| `webp` \| `gif` \| `bmp`) | Converte uma imagem para outro formato |
+
+Exemplos:
+
+```bash
+# Converter imagem
+curl -F file=@foto.png -F format=webp http://localhost:5107/api/media/convert/image -o foto.webp
+
+# Vídeo → MP3
+curl -F file=@clipe.mp4 -F format=mp3 http://localhost:5107/api/media/convert/video -o clipe.mp3
+
+# Baixar vídeo por URL
+curl -X POST http://localhost:5107/api/media/download \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://exemplo.com/video","format":"mp4"}' -o video.mp4
+```
+
+### Limites e comportamentos
+
+| Item | Valor |
+|---|---|
+| Upload de imagem | até 50 MB |
+| Upload de vídeo (conversão) | até 200 MB; processamento limitado a 5 minutos |
+| Download por URL | arquivo de até 500 MB; limitado a 10 minutos; apenas um vídeo por link (sem playlists) |
+| Formatos | o nome do formato não diferencia maiúsculas de minúsculas (`jpeg` vale como `jpg`) |
+| JPG | áreas transparentes de imagens (ex.: PNG) ficam **brancas** |
+| MP4 no download | prefere **H.264 + AAC**, para tocar em qualquer player (QuickTime, iPhone, editores) |
+| GIF | 15 fps e 480 px de largura; vídeos longos geram GIFs grandes |
+| Links aceitos | somente `http` e `https` |
+
+## Arquitetura
+
+O backend segue **Clean Architecture**, com as dependências sempre apontando para dentro:
+
+```
+API  ──►  Application  ──►  Domain
+ │            ▲
+ └──►  Infrastructure ─┘
+```
+
+| Projeto | Responsabilidade |
+|---|---|
+| `ClipDown.Domain` | Conceitos puros: enums de formato (`ImageFormat`, `VideoFormat`, `VideoConversionTarget`) |
+| `ClipDown.Application` | Regras da aplicação: serviços, contratos (interfaces) e modelos (`Result<T>`, `OutputFile`) |
+| `ClipDown.Infrastructure` | Detalhes técnicos: ImageSharp, FFmpeg, yt-dlp e o executor de processos externos |
+| `ClipDown.API` | Controllers HTTP, CORS e configuração |
+
+Cada funcionalidade segue o mesmo caminho:
+
+```
+MediaController  →  *Service (Application)  →  implementação (Infrastructure)
+   (HTTP)             valida entrada, nomes      ImageSharp / ffmpeg / yt-dlp
+```
+
+Decisões de design:
+
+- **Contratos na Application, implementações na Infrastructure:** trocar uma biblioteca ou ferramenta mexe só na Infrastructure.
+- **`Result<T>` em vez de exceções** para entradas inválidas (formato inexistente, arquivo que não é imagem, link inválido). Falhas inesperadas continuam sendo exceções e viram `500`.
+- **Processos externos sem shell:** os argumentos do yt-dlp/ffmpeg são passados como lista, e a URL vem depois de `--`, para nunca ser interpretada como opção.
+- **Arquivos temporários:** cada operação usa uma pasta temporária própria, apagada ao final.
+- **CORS:** as origens permitidas ficam em `backend/ClipDown.API/appsettings.json` (`Cors:AllowedOrigins`).
 
 ## Estrutura do projeto
 
@@ -115,14 +182,23 @@ npm start        # ng serve → http://localhost:4200
 ClipDown/
 ├── .gitignore
 ├── README.md
-├── backend/                 # API .NET (a ser criada)
-└── frontend/                 # Aplicação Angular
-    ├── src/
-    ├── angular.json
-    └── package.json
+├── docs/
+│   └── screenshots/             # Prints usados neste README
+├── backend/
+│   ├── ClipDown.sln
+│   ├── ClipDown.API/            # Controllers, Program.cs, appsettings
+│   ├── ClipDown.Application/    # Serviços, interfaces e modelos
+│   │   └── Features/            # Images/ e Videos/
+│   ├── ClipDown.Domain/         # Enums e tipos base
+│   └── ClipDown.Infrastructure/ # ImageSharp, ffmpeg, yt-dlp
+└── frontend/                    # Aplicação Angular
+    └── src/app/
+        ├── app.ts / app.html    # Tela única
+        └── services/media-api.ts  # Comunicação com o backend
 ```
 
 ## Notas
 
 - Projeto de **uso pessoal**, sem fins comerciais.
+- O backend não tem autenticação nem limite de requisições: **não o exponha na internet** como está.
 - Ao baixar/converter conteúdo de plataformas de terceiros, respeite os **termos de serviço** das plataformas e os **direitos autorais** dos conteúdos.
